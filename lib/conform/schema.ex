@@ -206,6 +206,7 @@ defmodule Conform.Schema do
   defp extract_datatype(v) when is_boolean(v), do: :boolean
   defp extract_datatype(v) when is_integer(v), do: :integer
   defp extract_datatype(v) when is_float(v),   do: :float
+  defp extract_datatype(v) when is_tuple(v),   do: :tuple
   # First check if the list value type is a charlist, otherwise
   # assume a list of whatever the first element value type is
   defp extract_datatype([h|_]=v) when is_list(v) and h != [] do

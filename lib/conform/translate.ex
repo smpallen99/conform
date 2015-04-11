@@ -219,6 +219,11 @@ defmodule Conform.Translate do
       _          -> raise TranslateError, message: "Invalid IP format for #{setting}. Expected format: IP:PORT"
     end
   end
+  defp parse_datatype(:tuple, value, _setting) when is_binary(value) do
+    String.split(value, ",")
+    |> Enum.map(&String.strip/1)
+    |> List.to_tuple
+  end
   defp parse_datatype([enum: valid_values], value, setting) do
     parsed = "#{value}" |> String.to_atom
     if Enum.any?(valid_values, fn v -> v == parsed end) do
@@ -226,6 +231,11 @@ defmodule Conform.Translate do
     else
       raise TranslateErorr, message: "Invalid enum value for #{setting}."
     end
+  end
+  defp parse_datatype([list: :tuple], value, setting) do
+    Regex.scan(~r/\{(.*?)\}/, "#{value}")
+    |> Enum.map(&(Enum.at &1, 1))
+    |> Enum.map(&(parse_datatype(:tuple, &1, setting)))
   end
   defp parse_datatype([list: list_type], value, setting) do
     "#{value}"
@@ -252,6 +262,9 @@ defmodule Conform.Translate do
   end
   defp write_datatype(:binary, value, _setting) do
     <<?", "#{value}", ?">>
+  end
+  defp write_datatype(:tuple, value, _setting) do
+    "{#{Tuple.to_list(value) |> Enum.join(",")}}"
   end
   defp write_datatype(_datatype, value, _setting), do: "#{value}"
 end
